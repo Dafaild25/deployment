@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consumo de API - Ventas</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+        crossorigin="anonymous"></script>
+</head>
+
+<body>
+    <nav class="navbar navbar-info bg-info fixed-top">
+        <br>
+        <div class="container-fluid">
+            <a class="navbar-brand text-white" href="#"><strong>Consumo de apis desde AWS</strong></a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas"
+                data-bs-target="#offcanvasDarkNavbar" aria-controls="offcanvasDarkNavbar"
+                aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="offcanvas offcanvas-end text-bg-info" tabindex="-1" id="offcanvasDarkNavbar"
+                aria-labelledby="offcanvasDarkNavbarLabel">
+                <div class="offcanvas-header">
+                    <h5 class="offcanvas-title text-white text-center" id="offcanvasDarkNavbarLabel">Menu de opciones
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"
+                        aria-label="Close"></button>
+                </div>
+                <div class="offcanvas-body">
+                    <ul class="navbar-nav justify-content-end flex-grow-1 pe-3">
+                        <li class="nav-item">
+                            <a class="nav-link active" aria-current="page" href="index.html"><strong>Inicio</strong></a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="cliente.html"><strong>Cliente</strong></a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="vendedor.html"><strong>Vendedor</strong></a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="producto.html">Producto</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="ventas.html">Proceso Ventas</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="detalle_venta.html">Ventas</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav><br><br><br><br><br>
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <h1 class="text-center">Consumo de Api con fetch - Ventas</h1>
+            </div>
+        </div>
+        <br>
+        <div class="row">
+            <form id="ventaForm">
+                <div class="row">
+                    <div class="col-md-6">
+                        <label for="cliente_id">Cliente:</label>
+                        <select class="form-control" id="cliente_id" name="cliente_id" required>
+                            <!-- Opciones de clientes se cargarán aquí -->
+                        </select><br><br>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="vendedor_id">Vendedor:</label>
+                        <select class="form-control" id="vendedor_id" name="vendedor_id" required>
+                            <!-- Opciones de vendedores se cargarán aquí -->
+                        </select><br><br>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4">
+                        <label for="fecha_venta">Fecha de Venta:</label>
+                        <input type="datetime-local" id="fecha_venta" required><br><br>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="creacion">Fecha de Creación:</label>
+                        <input type="datetime-local" id="creacion" required><br><br>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="actualizar">Fecha de Actualización:</label>
+                        <input type="datetime-local" id="actualizar" required><br><br>
+                    </div>
+                </div>
+                <button class="btn btn-info" type="submit">Enviar</button>
+            </form>
+        </div>
+    </div>
+    <h2>Lista de Ventas</h2>
+    <div class="table-responsive">
+        <table id="ventasTable" class="table table-bordered table-striped table-hover">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Cliente</th>
+                    <th>Vendedor</th>
+                    <th>Fecha de Venta</th>
+                    <th>Fecha de Creación</th>
+                    <th>Última Actualización</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Los datos de las ventas se insertarán aquí -->
+            </tbody>
+        </table>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            // Cargar opciones de clientes y vendedores al cargar la página
+            fetchClientes();
+            fetchVendedores();
+            fetchDetallesVentas();
+    
+            // Obtener clientes
+            function fetchClientes() {
+                $.ajax({
+                    url: 'http://18.208.211.107:3002/api/clientes',
+                    method: 'GET',
+                    success: function (data) {
+                        const clienteSelect = $('#cliente_id');
+                        data.forEach(cliente => {
+                            const option = $('<option></option>').val(cliente.id).text(`${cliente.primer_nombre} ${cliente.primer_apellido}`);
+                            clienteSelect.append(option);
+                        });
+                    },
+                    error: function (error) {
+                        console.error('Error al obtener clientes:', error);
+                    }
+                });
+            }
+    
+            // Obtener vendedores
+            function fetchVendedores() {
+                $.ajax({
+                    url: 'http://18.208.211.107:3002/api/vendedores',
+                    method: 'GET',
+                    success: function (data) {
+                        const vendedorSelect = $('#vendedor_id');
+                        data.forEach(vendedor => {
+                            const option = $('<option></option>').val(vendedor.id).text(`${vendedor.primer_nombre} ${vendedor.primer_apellido}`);
+                            vendedorSelect.append(option);
+                        });
+                    },
+                    error: function (error) {
+                        console.error('Error al obtener vendedores:', error);
+                    }
+                });
+            }
+    
+            // Obtener detalles de ventas
+            function fetchDetallesVentas() {
+                $.ajax({
+                    url: 'http://18.208.211.107:3002/api/detalles_ventas',
+                    method: 'GET',
+                    success: function (data) {
+                        const tbody = $('#ventasTable tbody');
+                        tbody.empty();
+                        data.forEach(detalle => {
+                            const tr = $('<tr></tr>');
+                            tr.append(`<td>${detalle.id}</td>`);
+                            tr.append(`<td>${detalle.cliente_id}</td>`);
+                            tr.append(`<td>${detalle.vendedor_id}</td>`);
+                            tr.append(`<td>${new Date(detalle.fecha_venta).toLocaleString()}</td>`);
+                            tr.append(`<td>${new Date(detalle.created_at).toLocaleString()}</td>`);
+                            tr.append(`<td>${new Date(detalle.updated_at).toLocaleString()}</td>`);
+                            tbody.append(tr);
+                        });
+                    },
+                    error: function (error) {
+                        console.error('Error al obtener detalles de ventas:', error);
+                    }
+                });
+            }
+    
+            // Agregar un nuevo detalle de venta
+            $('#ventaForm').on('submit', function (event) {
+                event.preventDefault();
+                const cliente_id = $('#cliente_id').val();
+                const vendedor_id = $('#vendedor_id').val();
+                const fecha_venta = $('#fecha_venta').val();
+                const created_at = $('#creacion').val();
+                const updated_at = $('#actualizar').val();
+    
+                const formData = {
+                    cliente_id,
+                    vendedor_id,
+                    fecha_venta,
+                    created_at,
+                    updated_at
+                };
+    
+                $.ajax({
+                    url: 'http://18.208.211.107:3002/api/detalles_ventas',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(formData),
+                    success: function () {
+                        alert('Detalle de venta agregado con éxito');
+                        fetchDetallesVentas(); // Actualiza la lista de detalles de ventas
+                    },
+                    error: function (error) {
+                        alert('Error al agregar el detalle de venta');
+                        console.error('Error al agregar el detalle de venta:', error);
+                    }
+                });
+            });
+        });
+    </script>
+       
+    
+    
+</body>
+
+</html>
